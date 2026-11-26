@@ -1,7 +1,7 @@
 document.documentElement.classList.add("js");
 
 const year = document.querySelector("#current-year");
-year.textContent = String(new Date().getFullYear());
+if (year) year.textContent = String(new Date().getFullYear());
 
 const searchForm = document.querySelector("#product-search");
 const searchInput = document.querySelector("#search-input");
@@ -54,6 +54,21 @@ const fallbackProductVisuals = {
   "body-butter": ["visual-cream", "cream", "BOTANICA", "BODY BUTTER", "Pre telo"],
   "clear-mask": ["visual-oil", "cream", "LUXE", "CLEAR MASK", "Týždenný rituál"]
 };
+const fallbackProductSizes = {
+  "glow-serum": "30 ml",
+  "daily-cream": "50 ml",
+  "calming-oil": "100 ml",
+  "night-cream": "50 ml",
+  "hydra-tonic": "150 ml",
+  "lip-balm": "15 ml",
+  "body-butter": "200 ml",
+  "clear-mask": "75 ml"
+};
+const productSizes = new Map(productCards.flatMap((card) => {
+  const productId = card.querySelector(".add-to-cart")?.dataset.productId;
+  const size = card.querySelector(".product-size")?.textContent.trim();
+  return productId && size ? [[productId, size]] : [];
+}));
 try {
   const savedCart = JSON.parse(localStorage.getItem("luxe-cart") || "[]");
   savedCart.forEach((item) => {
@@ -78,11 +93,11 @@ const cartTotal = document.querySelector("#cart-total");
 const cartAnnouncement = document.querySelector("#cart-announcement");
 const checkoutButton = document.querySelector("#checkout-button");
 const continueShoppingButton = document.querySelector("#continue-shopping-button");
-const orderSummaryDialog = document.querySelector("#order-summary");
-const orderSummaryItems = document.querySelector("#order-summary-items");
-const orderSummaryTotal = document.querySelector("#order-summary-total");
-const orderSummaryClose = document.querySelector(".order-summary-close");
-const orderSummaryBack = document.querySelector("#order-summary-back");
+const checkoutForm = document.querySelector("#checkout-form");
+const checkoutItems = document.querySelector("#checkout-items");
+const checkoutTotal = document.querySelector("#checkout-total");
+const checkoutEmpty = document.querySelector("#checkout-empty");
+const orderConfirmation = document.querySelector("#order-confirmation");
 const currency = new Intl.NumberFormat("sk-SK", {
   style: "currency",
   currency: "EUR"
@@ -209,27 +224,49 @@ function openCart() {
   cartTrigger.setAttribute("aria-expanded", "true");
 }
 
-function renderOrderSummary() {
-  const total = [...cart.values()].reduce((sum, item) => sum + item.price * item.quantity, 0);
-  orderSummaryItems.replaceChildren();
+function renderCheckout() {
+  if (!checkoutForm || !checkoutItems || !checkoutTotal || !checkoutEmpty) return;
 
-  cart.forEach((item) => {
+  checkoutItems.replaceChildren();
+  let total = 0;
+
+  cart.forEach((item, id) => {
     const row = document.createElement("li");
-    row.className = "order-summary-item";
+    row.className = "checkout-item";
 
-    const details = document.createElement("span");
-    details.textContent = `${item.name} × ${item.quantity}`;
+    const thumbnail = document.createElement("div");
+    thumbnail.className = "checkout-item-thumbnail";
+    thumbnail.setAttribute("aria-hidden", "true");
+    const productVisual = getProductVisual(id);
+    if (productVisual) thumbnail.append(productVisual);
+
+    const details = document.createElement("div");
+    details.className = "checkout-item-details";
+    const name = document.createElement("h3");
+    name.textContent = item.name;
+    const fallbackSize = Object.prototype.hasOwnProperty.call(fallbackProductSizes, id)
+      ? fallbackProductSizes[id]
+      : "";
+    const size = productSizes.get(id) || fallbackSize;
+    const meta = document.createElement("p");
+    meta.textContent = `${size} · ${item.quantity} ks`;
     const price = document.createElement("strong");
     price.textContent = currency.format(item.price * item.quantity);
+    details.append(name, meta);
 
-    row.append(details, price);
-    orderSummaryItems.append(row);
+    row.append(thumbnail, details, price);
+    checkoutItems.append(row);
+    total += item.price * item.quantity;
   });
 
-  orderSummaryTotal.textContent = currency.format(total);
+  checkoutTotal.textContent = currency.format(total);
+  const hasItems = cart.size > 0;
+  checkoutForm.hidden = !hasItems;
+  checkoutEmpty.hidden = hasItems;
 }
 
-renderCart();
+if (cartItems) renderCart();
+if (checkoutForm) renderCheckout();
 
 document.querySelectorAll(".add-to-cart").forEach((button) => {
   button.addEventListener("click", () => {
@@ -253,25 +290,27 @@ document.querySelectorAll(".add-to-cart").forEach((button) => {
   });
 });
 
-cartItems.addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-cart-action]");
-  if (!button) return;
+if (cartItems) {
+  cartItems.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-cart-action]");
+    if (!button) return;
 
-  const row = button.closest(".cart-item");
-  const item = cart.get(row.dataset.productId);
-  if (!item) return;
+    const row = button.closest(".cart-item");
+    const item = cart.get(row.dataset.productId);
+    if (!item) return;
 
-  if (button.dataset.cartAction === "increase") {
-    item.quantity += 1;
-  } else if (button.dataset.cartAction === "decrease") {
-    item.quantity -= 1;
-    if (item.quantity === 0) cart.delete(row.dataset.productId);
-  } else if (button.dataset.cartAction === "remove") {
-    cart.delete(row.dataset.productId);
-  }
+    if (button.dataset.cartAction === "increase") {
+      item.quantity += 1;
+    } else if (button.dataset.cartAction === "decrease") {
+      item.quantity -= 1;
+      if (item.quantity === 0) cart.delete(row.dataset.productId);
+    } else if (button.dataset.cartAction === "remove") {
+      cart.delete(row.dataset.productId);
+    }
 
-  renderCart();
-});
+    renderCart();
+  });
+}
 
 if (cartTrigger && cartDialog) {
   cartTrigger.addEventListener("click", openCart);
@@ -288,19 +327,27 @@ if (continueShoppingButton && cartDialog) {
   continueShoppingButton.addEventListener("click", () => cartDialog.close());
 }
 
-if (checkoutButton && orderSummaryDialog) {
+if (checkoutButton) {
   checkoutButton.addEventListener("click", () => {
     if (cart.size === 0) return;
-    renderOrderSummary();
-    orderSummaryDialog.showModal();
+    window.location.href = "objednavka.html";
   });
 }
 
-if (orderSummaryDialog) {
-  orderSummaryClose.addEventListener("click", () => orderSummaryDialog.close());
-  orderSummaryBack.addEventListener("click", () => orderSummaryDialog.close());
-  orderSummaryDialog.addEventListener("click", (event) => {
-    if (event.target === orderSummaryDialog) orderSummaryDialog.close();
+if (checkoutForm) {
+  checkoutForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (cart.size === 0) return;
+
+    const customerName = new FormData(checkoutForm).get("name");
+    cart.clear();
+    saveCart();
+    renderCheckout();
+    checkoutEmpty.hidden = true;
+    if (orderConfirmation) {
+      orderConfirmation.textContent = `Ďakujeme${customerName ? `, ${customerName}` : ""}. Objednávka bola zaznamenaná v ukážkovej pokladni. Údaje neboli odoslané.`;
+      orderConfirmation.hidden = false;
+    }
   });
 }
 
