@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4efe6">
+  <meta name="description" content="Celý katalóg kozmetiky a starostlivosti LUXE.">
+  <title>LUXE — Celý katalóg</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="wordmark" href="index.html" aria-label="LUXE — hlavná stránka">LUXE</a>
+    <form class="search-form" id="product-search" role="search">
+      <label class="visually-hidden" for="search-input">Hľadať produkt</label>
+      <input id="search-input" name="q" type="search" placeholder="Hľadať produkt..." autocomplete="off">
+      <button class="icon-button search-submit" type="submit" aria-label="Hľadať">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none">
+          <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.5"/>
+          <path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </form>
+    <nav class="header-actions" aria-label="Rýchla navigácia">
+      <a class="icon-button" href="index.html#projekty" aria-label="Späť na hlavný katalóg" title="Hlavný katalóg">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </a>
+      <a class="icon-button" href="index.html#o-mne" aria-label="Profil používateľa" title="Profil">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M4.5 20c.7-3.5 3.4-5.5 7.5-5.5s6.8 2 7.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </a>
+      <button class="icon-button cart-trigger" type="button" aria-label="Košík, 0 položiek" aria-haspopup="dialog" aria-expanded="false" aria-controls="cart-dialog">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none">
+          <path d="M3.5 4h2l2.2 11.1a2 2 0 0 0 2 1.6h8.5a2 2 0 0 0 1.9-1.4L22 8H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="10" cy="20" r="1" fill="currentColor"/>
+          <circle cx="18" cy="20" r="1" fill="currentColor"/>
+        </svg>
+        <span class="cart-count" id="cart-count" aria-hidden="true">0</span>
+      </button>
+    </nav>
+  </header>
+
+  <dialog class="cart-dialog" id="cart-dialog" aria-labelledby="cart-title">
+    <div class="cart-header">
+      <div>
+        <p class="eyebrow">Váš výber</p>
+        <h2 id="cart-title">Košík<span class="period">.</span></h2>
+      </div>
+      <button class="icon-button cart-close" type="button" aria-label="Zavrieť košík">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none">
+          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <p class="cart-empty" id="cart-empty">Váš košík je zatiaľ prázdny.</p>
+    <ul class="cart-items" id="cart-items" aria-live="polite"></ul>
+    <div class="cart-footer">
+      <p class="cart-total">Spolu <strong id="cart-total">0,00 €</strong></p>
+      <button class="checkout-button" id="checkout-button" type="button" disabled>Pokračovať k objednávke</button>
+      <p class="checkout-note" id="checkout-note">Ukážkový obchod — online platba zatiaľ nie je nastavená.</p>
+    </div>
+  </dialog>
+  <p class="cart-announcement" id="cart-announcement" aria-live="polite"></p>
+
+  <main>
+    <section class="catalog-page section-wrap" aria-labelledby="catalog-page-title">
+      <div class="catalog-page-heading" data-reveal>
+        <div>
+          <p class="eyebrow">Kozmetická starostlivosť <span class="eyebrow-divider">/</span> Celá ponuka</p>
+          <h1 id="catalog-page-title">Celý katalóg<span class="period">.</span></h1>
+        </div>
+        <a class="back-link" href="index.html"><span aria-hidden="true">←</span> Späť na hlavnú stránku</a>
+      </div>
+
+      <div class="product-grid catalog-page-grid" id="product-grid">
+        <article class="product-card" data-reveal data-search="serum rozjasnujuce vitamin c ziara">
+          <div class="product-visual visual-serum" aria-hidden="true"><span class="product-bottle serum-bottle"><span class="bottle-cap"></span><span class="bottle-label">LUXE<br><small>GLOW SERUM</small></span></span><span class="product-badge">Bestseller</span></div>
+          <div class="product-info"><div><p class="product-category">SÉRUM <span>·</span> LUXE</p><h3>Rozjasňujúce sérum</h3><p class="product-size">30 ml</p></div><span class="product-price">34,00 €</span></div>
+          <button class="add-to-cart" type="button" data-product-id="glow-serum" data-product-name="Rozjasňujúce sérum" data-product-price="34" aria-label="Pridať Rozjasňujúce sérum do košíka">Rýchlo pridať <span aria-hidden="true">+</span></button>
+        </article>
+
+        <article class="product-card" data-reveal data-search="hydratacny krem obnova vyziva">
+          <div class="product-visual visual-cream" aria-hidden="true"><span class="cream-jar"><span class="jar-lid"></span><span class="jar-label">BOTANICA<br><small>DAILY CREAM</small></span></span><span class="product-badge">Každodenný rituál</span></div>
+          <div class="product-info"><div><p class="product-category">KRÉM <span>·</span> BOTANICA</p><h3>Hydratačný krém</h3><p class="product-size">50 ml</p></div><span class="product-price">42,00 €</span></div>
+          <button class="add-to-cart" type="button" data-product-id="daily-cream" data-product-name="Hydratačný krém" data-product-price="42" aria-label="Pridať Hydratačný krém do košíka">Rýchlo pridať <span aria-hidden="true">+</span></button>
+        </article>
+
+        <article class="product-card" data-reveal data-search="cistiaci olej odlicenie jemny">
+          <div class="product-visual visual-oil" aria-hidden="true"><span class="product-bottle oil-bottle"><span class="bottle-cap"></span><span class="bottle-label">LUXE<br><small>CALMING OIL</small></span></span><span class="product-badge">Jemné čistenie</span></div>
+          <div class="product-info"><div><p class="product-category">ČISTENIE <span>·</span> LUXE</p><h3>Čistiaci pleťový olej</h3><p class="product-size">100 ml</p></div><span class="product-price">28,00 €</span></div>
+          <button class="add-to-cart" type="button" data-product-id="calming-oil" data-product-name="Čistiaci pleťový olej" data-product-price="28" aria-label="Pridať Čistiaci pleťový olej do košíka">Rýchlo pridať <span aria-hidden="true">+</span></button>
+        </article>
+
+        <article class="product-card" data-reveal data-search="nocny krem regeneracia obnova">
+          <div class="product-visual visual-cream" aria-hidden="true"><span class="cream-jar"><span class="jar-lid"></span><span class="jar-label">LUXE<br><small>NIGHT CREAM</small></span></span><span class="product-badge">Novinka</span></div>
+          <div class="product-info"><div><p class="product-category">KRÉM <span>·</span> LUXE</p><h3>Nočný regeneračný krém</h3><p class="product-size">50 ml</p></div><span class="product-price">46,00 €</span></div>
+          <button class="add-to-cart" type="button" data-product-id="night-cream" data-product-name="Nočný regeneračný krém" data-product-price="46" aria-label="Pridať Nočný regeneračný krém do košíka">Rýchlo pridať <span aria-hidden="true">+</span></button>
+        </article>
+
+        <article class="product-card" data-reveal data-search="tonikum serum hydratacia pleť">
+          <div class="product-visual visual-serum" aria-hidden="true"><span class="product-bottle serum-bottle"><span class="bottle-cap"></span><span class="bottle-label">BOTANICA<br><small>HYDRA TONIC</small></span></span><span class="product-badge">Hydratácia</span></div>
+          <div class="product-info"><div><p class="product-category">TONIKUM <span>·</span> BOTANICA</p><h3>Hydratačné tonikum</h3><p class="product-size">150 ml</p></div><span class="product-price">24,00 €</span></div>
+          <button class="add-to-cart" type="button" data-product-id="hydra-tonic" data-product-name="Hydratačné tonikum" data-product-price="24" aria-label="Pridať Hydratačné tonikum do košíka">Rýchlo pridať <span aria-hidden="true">+</span></button>
+        </article>
+
+        <article class="product-card" data-reveal data-search="balzam na pery ochrana krem">
+          <div class="product-visual visual-oil" aria-hidden="true"><span class="cream-jar"><span class="jar-lid"></span><span class="jar-label">LUXE<br><small>LIP BALM</small></span></span><span class="product-badge">Denný základ</span></div>
+          <div class="product-info"><div><p class="product-category">BALZAM <span>·</span> LUXE</p><h3>Vyživujúci balzam na pery</h3><p class="product-size">15 ml</p></div><span class="product-price">16,00 €</span></div>
+          <button class="add-to-cart" type="button" data-product-id="lip-balm" data-product-name="Vyživujúci balzam na pery" data-product-price="16" aria-label="Pridať Vyživujúci balzam na pery do košíka">Rýchlo pridať <span aria-hidden="true">+</span></button>
+        </article>
+
+        <article class="product-card" data-reveal data-search="maslo telove vyziva peleg">
+          <div class="product-visual visual-cream" aria-hidden="true"><span class="cream-jar"><span class="jar-lid"></span><span class="jar-label">BOTANICA<br><small>BODY BUTTER</small></span></span><span class="product-badge">Pre telo</span></div>
+          <div class="product-info"><div><p class="product-category">TELOVÁ STAROSTLIVOSŤ <span>·</span> BOTANICA</p><h3>Telové maslo</h3><p class="product-size">200 ml</p></div><span class="product-price">38,00 €</span></div>
+          <button class="add-to-cart" type="button" data-product-id="body-butter" data-product-name="Telové maslo" data-product-price="38" aria-label="Pridať Telové maslo do košíka">Rýchlo pridať <span aria-hidden="true">+</span></button>
+        </article>
+
+        <article class="product-card" data-reveal data-search="pleti maska detox cistiaca">
+          <div class="product-visual visual-oil" aria-hidden="true"><span class="cream-jar"><span class="jar-lid"></span><span class="jar-label">LUXE<br><small>CLEAR MASK</small></span></span><span class="product-badge">Týždenný rituál</span></div>
+          <div class="product-info"><div><p class="product-category">MASKA <span>·</span> LUXE</p><h3>Čistiaca pleťová maska</h3><p class="product-size">75 ml</p></div><span class="product-price">32,00 €</span></div>
+          <button class="add-to-cart" type="button" data-product-id="clear-mask" data-product-name="Čistiaca pleťová maska" data-product-price="32" aria-label="Pridať Čistiacu pleťovú masku do košíka">Rýchlo pridať <span aria-hidden="true">+</span></button>
+        </article>
+      </div>
+      <p class="search-results" id="search-results" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="wordmark" href="index.html">LUXE</a>
+    <p>Starostlivosť s citom pre detail.</p>
+    <a class="back-to-top" href="katalog.html">Späť na začiatok <span aria-hidden="true">↑</span></a>
+    <span class="copyright">© <span id="current-year">2025</span> LUXE</span>
+  </footer>
+</body>
+</html>
