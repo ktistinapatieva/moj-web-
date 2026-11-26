@@ -750,10 +750,42 @@ button:focus-visible {
 .cart-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: initial;
   gap: 1rem;
   padding: 1.2rem 0;
   border-bottom: 1px solid var(--line);
+}
+
+.cart-item-thumbnail {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+}
+
+.cart-item-thumbnail .product-visual {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.cart-item-thumbnail .product-badge {
+  top: 3px;
+  left: 3px;
+  padding: 2px 3px;
+  font-size: 4px;
+}
+
+.cart-item-thumbnail .bottle-label,
+.cart-item-thumbnail .jar-label {
+  font-size: 5px;
+  letter-spacing: 0.06em;
+}
+
+.cart-item-details {
+  flex: 1;
+  min-width: 0;
 }
 
 .cart-item h3 {
@@ -770,6 +802,7 @@ button:focus-visible {
 
 .cart-item-controls {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 0.5rem;
 }

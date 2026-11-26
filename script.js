@@ -39,6 +39,21 @@ if (searchForm) {
 if (searchInput) searchInput.addEventListener("input", filterProducts);
 
 const cart = new Map();
+const productVisuals = new Map(productCards.flatMap((card) => {
+  const productId = card.querySelector(".add-to-cart")?.dataset.productId;
+  const visual = card.querySelector(".product-visual");
+  return productId && visual ? [[productId, visual]] : [];
+}));
+const fallbackProductVisuals = {
+  "glow-serum": ["visual-serum", "serum", "LUXE", "GLOW SERUM", "Bestseller"],
+  "daily-cream": ["visual-cream", "cream", "BOTANICA", "DAILY CREAM", "Každodenný rituál"],
+  "calming-oil": ["visual-oil", "oil", "LUXE", "CALMING OIL", "Jemné čistenie"],
+  "night-cream": ["visual-cream", "cream", "LUXE", "NIGHT CREAM", "Novinka"],
+  "hydra-tonic": ["visual-serum", "serum", "BOTANICA", "HYDRA TONIC", "Hydratácia"],
+  "lip-balm": ["visual-oil", "cream", "LUXE", "LIP BALM", "Denný základ"],
+  "body-butter": ["visual-cream", "cream", "BOTANICA", "BODY BUTTER", "Pre telo"],
+  "clear-mask": ["visual-oil", "cream", "LUXE", "CLEAR MASK", "Týždenný rituál"]
+};
 try {
   const savedCart = JSON.parse(localStorage.getItem("luxe-cart") || "[]");
   savedCart.forEach((item) => {
@@ -83,6 +98,50 @@ function createCartControl(label, action, text, className = "") {
   return button;
 }
 
+function getProductVisual(productId) {
+  const source = productVisuals.get(productId);
+  if (source) return source.cloneNode(true);
+
+  const visualDetails = Object.prototype.hasOwnProperty.call(fallbackProductVisuals, productId)
+    ? fallbackProductVisuals[productId]
+    : null;
+  if (!visualDetails) return null;
+
+  const [background, containerType, brand, productName, badgeText] = visualDetails;
+  const visual = document.createElement("div");
+  visual.className = `product-visual ${background}`;
+
+  const container = document.createElement("span");
+  container.className = containerType === "cream"
+    ? "cream-jar"
+    : `product-bottle ${containerType === "oil" ? "oil-bottle" : "serum-bottle"}`;
+
+  if (containerType !== "cream") {
+    const cap = document.createElement("span");
+    cap.className = "bottle-cap";
+    container.append(cap);
+  } else {
+    const lid = document.createElement("span");
+    lid.className = "jar-lid";
+    container.append(lid);
+  }
+
+  const label = document.createElement("span");
+  label.className = containerType === "cream" ? "jar-label" : "bottle-label";
+  label.append(document.createTextNode(brand), document.createElement("br"));
+  const productLabel = document.createElement("small");
+  productLabel.textContent = productName;
+  label.append(productLabel);
+  container.append(label);
+  visual.append(container);
+
+  const badge = document.createElement("span");
+  badge.className = "product-badge";
+  badge.textContent = badgeText;
+  visual.append(badge);
+  return visual;
+}
+
 function saveCart() {
   const savedCart = [...cart.entries()].map(([id, item]) => ({
     id,
@@ -110,7 +169,14 @@ function renderCart() {
     const row = document.createElement("li");
     row.className = "cart-item";
 
+    const thumbnail = document.createElement("div");
+    thumbnail.className = "cart-item-thumbnail";
+    thumbnail.setAttribute("aria-hidden", "true");
+    const productVisual = getProductVisual(id);
+    if (productVisual) thumbnail.append(productVisual);
+
     const details = document.createElement("div");
+    details.className = "cart-item-details";
     const name = document.createElement("h3");
     name.textContent = item.name;
     const price = document.createElement("p");
@@ -132,7 +198,7 @@ function renderCart() {
     );
 
     row.dataset.productId = id;
-    row.append(details, controls);
+    row.append(thumbnail, details, controls);
     cartItems.append(row);
   });
 }
