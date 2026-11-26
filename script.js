@@ -62,7 +62,12 @@ const cartCount = document.querySelector("#cart-count");
 const cartTotal = document.querySelector("#cart-total");
 const cartAnnouncement = document.querySelector("#cart-announcement");
 const checkoutButton = document.querySelector("#checkout-button");
-const checkoutNote = document.querySelector("#checkout-note");
+const continueShoppingButton = document.querySelector("#continue-shopping-button");
+const orderSummaryDialog = document.querySelector("#order-summary");
+const orderSummaryItems = document.querySelector("#order-summary-items");
+const orderSummaryTotal = document.querySelector("#order-summary-total");
+const orderSummaryClose = document.querySelector(".order-summary-close");
+const orderSummaryBack = document.querySelector("#order-summary-back");
 const currency = new Intl.NumberFormat("sk-SK", {
   style: "currency",
   currency: "EUR"
@@ -95,7 +100,7 @@ function renderCart() {
   const itemWord = itemCount === 1 ? "položka" : itemCount >= 2 && itemCount <= 4 ? "položky" : "položiek";
 
   cartCount.textContent = String(itemCount);
-  cartTrigger.setAttribute("aria-label", `Košík, ${itemCount} ${itemWord}`);
+  if (cartTrigger) cartTrigger.setAttribute("aria-label", `Košík, ${itemCount} ${itemWord}`);
   cartTotal.textContent = currency.format(total);
   cartEmpty.hidden = cart.size > 0;
   checkoutButton.disabled = cart.size === 0;
@@ -132,6 +137,32 @@ function renderCart() {
   });
 }
 
+function openCart() {
+  if (!cartDialog || !cartTrigger || cartDialog.open) return;
+  cartDialog.showModal();
+  cartTrigger.setAttribute("aria-expanded", "true");
+}
+
+function renderOrderSummary() {
+  const total = [...cart.values()].reduce((sum, item) => sum + item.price * item.quantity, 0);
+  orderSummaryItems.replaceChildren();
+
+  cart.forEach((item) => {
+    const row = document.createElement("li");
+    row.className = "order-summary-item";
+
+    const details = document.createElement("span");
+    details.textContent = `${item.name} × ${item.quantity}`;
+    const price = document.createElement("strong");
+    price.textContent = currency.format(item.price * item.quantity);
+
+    row.append(details, price);
+    orderSummaryItems.append(row);
+  });
+
+  orderSummaryTotal.textContent = currency.format(total);
+}
+
 renderCart();
 
 document.querySelectorAll(".add-to-cart").forEach((button) => {
@@ -152,6 +183,7 @@ document.querySelectorAll(".add-to-cart").forEach((button) => {
 
     renderCart();
     cartAnnouncement.textContent = `${productName} bol pridaný do košíka.`;
+    openCart();
   });
 });
 
@@ -176,10 +208,7 @@ cartItems.addEventListener("click", (event) => {
 });
 
 if (cartTrigger && cartDialog) {
-  cartTrigger.addEventListener("click", () => {
-    cartDialog.showModal();
-    cartTrigger.setAttribute("aria-expanded", "true");
-  });
+  cartTrigger.addEventListener("click", openCart);
 }
 if (cartClose && cartDialog) {
   cartClose.addEventListener("click", () => cartDialog.close());
@@ -189,9 +218,23 @@ if (cartClose && cartDialog) {
   });
 }
 
-if (checkoutButton) {
+if (continueShoppingButton && cartDialog) {
+  continueShoppingButton.addEventListener("click", () => cartDialog.close());
+}
+
+if (checkoutButton && orderSummaryDialog) {
   checkoutButton.addEventListener("click", () => {
-    checkoutNote.textContent = "Toto je ukážkový košík. Pre prijímanie platieb je potrebné prepojiť pokladňu s platobnou bránou.";
+    if (cart.size === 0) return;
+    renderOrderSummary();
+    orderSummaryDialog.showModal();
+  });
+}
+
+if (orderSummaryDialog) {
+  orderSummaryClose.addEventListener("click", () => orderSummaryDialog.close());
+  orderSummaryBack.addEventListener("click", () => orderSummaryDialog.close());
+  orderSummaryDialog.addEventListener("click", (event) => {
+    if (event.target === orderSummaryDialog) orderSummaryDialog.close();
   });
 }
 

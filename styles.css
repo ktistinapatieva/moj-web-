@@ -642,7 +642,8 @@ button:focus-visible {
 }
 
 .add-to-cart,
-.checkout-button {
+.checkout-button,
+.continue-shopping-button {
   display: flex;
   width: 100%;
   min-height: 43px;
@@ -663,7 +664,8 @@ button:focus-visible {
 }
 
 .add-to-cart:hover,
-.checkout-button:not(:disabled):hover {
+.checkout-button:not(:disabled):hover,
+.continue-shopping-button:hover {
   background: var(--ink);
   color: var(--paper);
 }
@@ -822,6 +824,12 @@ button:focus-visible {
   color: var(--paper);
 }
 
+.continue-shopping-button {
+  justify-content: center;
+  margin-top: 0.65rem;
+  background: transparent;
+}
+
 .checkout-button:disabled {
   border-color: var(--line);
   background: var(--soft);
@@ -829,11 +837,44 @@ button:focus-visible {
   cursor: not-allowed;
 }
 
-.checkout-note {
-  margin: 0.8rem 0 0;
+.order-summary-dialog {
+  z-index: 1;
+}
+
+.order-summary-items {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-summary-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.order-summary-item strong {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.order-summary-total {
+  margin: 1.5rem 0;
+}
+
+.order-summary-note {
+  margin: 0 0 1.25rem;
   color: var(--muted);
-  font-size: 10px;
-  text-align: center;
+  font-size: 11px;
+}
+
+.order-summary-back {
+  flex: 0 0 auto;
 }
 
 .cart-announcement {
