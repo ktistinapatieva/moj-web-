@@ -109,6 +109,13 @@ const checkoutModePanels = {
 const accountStatus = document.querySelector("#account-status");
 const guestCheckoutButton = document.querySelector("#guest-checkout-button");
 const checkoutProfileKey = "luxe-customer";
+const paymentDialog = document.querySelector("#payment-dialog");
+const paymentForm = document.querySelector("#payment-form");
+const paymentAmount = document.querySelector("#payment-amount");
+const paymentCardFields = document.querySelector("#payment-card-fields");
+const paymentMethodNote = document.querySelector("#payment-method-note");
+const paymentDialogClose = document.querySelector(".payment-dialog-close");
+let pendingCheckout = null;
 const currency = new Intl.NumberFormat("sk-SK", {
   style: "currency",
   currency: "EUR"
@@ -344,7 +351,7 @@ function saveCustomerProfile(formData, email) {
   }));
 }
 
-function completeCheckout(form, email) {
+function completeCheckout(form, email, paid = false) {
   if (!cart.size) return;
 
   const formData = new FormData(form);
@@ -355,9 +362,48 @@ function completeCheckout(form, email) {
   renderCheckout();
 
   if (orderConfirmation) {
-    orderConfirmation.textContent = `Ďakujeme${customerName ? `, ${customerName}` : ""}. Objednávka bola zaznamenaná v ukážkovej pokladni. Platba ani odoslanie údajov neprebehli.`;
+    orderConfirmation.textContent = paid
+      ? `Ďakujeme${customerName ? `, ${customerName}` : ""}. Platba bola úspešne simulovaná v ukážkovej bráne a objednávka bola zaznamenaná. Žiadne peniaze neboli strhnuté ani údaje odoslané.`
+      : `Ďakujeme${customerName ? `, ${customerName}` : ""}. Objednávka na dobierku bola zaznamenaná v ukážkovej pokladni. Údaje neboli odoslané.`;
     orderConfirmation.hidden = false;
   }
+}
+
+function openPaymentDialog(form, email) {
+  if (!paymentDialog || !paymentForm) return;
+
+  pendingCheckout = { form, email };
+  paymentAmount.textContent = checkoutTotal.textContent;
+  paymentForm.reset();
+  paymentCardFields.hidden = false;
+  paymentCardFields.querySelectorAll("input").forEach((input) => {
+    input.required = true;
+  });
+  paymentMethodNote.hidden = true;
+  paymentDialog.showModal();
+  paymentCardFields.querySelector("input").focus();
+}
+
+function updatePaymentMethod(method) {
+  const isCard = method === "card";
+  paymentCardFields.hidden = !isCard;
+  paymentCardFields.querySelectorAll("input").forEach((input) => {
+    input.required = isCard;
+    if (!isCard) input.value = "";
+  });
+  paymentMethodNote.hidden = isCard;
+  paymentMethodNote.textContent = isCard
+    ? ""
+    : "Ide o ukážkový výber. Na presmerovanie do tejto služby je potrebné nakonfigurovať platobnú bránu.";
+}
+
+function submitCheckout(form, email) {
+  const paymentMethod = form.elements.namedItem("payment").value;
+  if (paymentMethod === "online") {
+    openPaymentDialog(form, email);
+    return;
+  }
+  completeCheckout(form, email);
 }
 
 if (accountForm && quickOrderForm) {
@@ -398,7 +444,7 @@ if (quickOrderForm) {
   quickOrderForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const accountEmail = String(accountForm?.elements.namedItem("email").value || "");
-    completeCheckout(quickOrderForm, accountEmail);
+    submitCheckout(quickOrderForm, accountEmail);
   });
 }
 
@@ -417,9 +463,38 @@ if (standardOrderForm) {
   }, true);
   standardOrderForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    completeCheckout(standardOrderForm);
+    submitCheckout(standardOrderForm);
   });
 }
+
+paymentForm?.querySelectorAll('input[name="gateway-method"]').forEach((input) => {
+  input.addEventListener("change", () => updatePaymentMethod(input.value));
+});
+
+paymentForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!pendingCheckout || !cart.size) return;
+
+  const checkout = pendingCheckout;
+  pendingCheckout = null;
+  paymentDialog.close();
+  paymentForm.reset();
+  updatePaymentMethod("card");
+  completeCheckout(checkout.form, checkout.email, true);
+});
+
+paymentDialogClose?.addEventListener("click", () => {
+  pendingCheckout = null;
+  paymentDialog.close();
+  paymentForm.reset();
+  updatePaymentMethod("card");
+});
+
+paymentDialog?.addEventListener("close", () => {
+  pendingCheckout = null;
+  paymentForm.reset();
+  updatePaymentMethod("card");
+});
 
 document.querySelectorAll(".add-to-cart").forEach((button) => {
   button.addEventListener("click", () => {
@@ -484,23 +559,6 @@ if (checkoutButton) {
   checkoutButton.addEventListener("click", () => {
     if (cart.size === 0) return;
     window.location.href = "objednavka.html";
-  });
-}
-
-if (checkoutForm) {
-  checkoutForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (cart.size === 0) return;
-
-    const customerName = new FormData(checkoutForm).get("name");
-    cart.clear();
-    saveCart();
-    renderCheckout();
-    checkoutEmpty.hidden = true;
-    if (orderConfirmation) {
-      orderConfirmation.textContent = `Ďakujeme${customerName ? `, ${customerName}` : ""}. Objednávka bola zaznamenaná v ukážkovej pokladni. Údaje neboli odoslané.`;
-      orderConfirmation.hidden = false;
-    }
   });
 }
 
