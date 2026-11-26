@@ -18,55 +18,164 @@
 
   <main class="checkout-main">
     <div class="checkout-heading">
-      <p class="eyebrow">LUXE <span class="eyebrow-divider">/</span> Rýchly a jednoduchý nákup</p>
+      <p class="eyebrow">LUXE <span class="eyebrow-divider">/</span> Vyberte si spôsob nákupu</p>
       <h1>Objednávka<span class="period">.</span></h1>
+    </div>
+
+    <div class="checkout-mode-switch" role="group" aria-label="Vyberte spôsob objednávky">
+      <button class="checkout-mode-button is-active" type="button" data-checkout-mode="quick" aria-pressed="true" aria-controls="quick-checkout-panel">Rýchla pokladňa</button>
+      <button class="checkout-mode-button" type="button" data-checkout-mode="standard" aria-pressed="false" aria-controls="standard-checkout-panel">Štandardná objednávka</button>
     </div>
 
     <div class="checkout-layout">
       <section class="checkout-review" aria-labelledby="checkout-items-title">
         <div class="checkout-section-heading">
           <h2 id="checkout-items-title">Váš výber</h2>
-          <span class="eyebrow">01 <span class="eyebrow-divider">/</span> Produkty</span>
+          <span class="eyebrow">Produkty</span>
         </div>
         <ul class="checkout-items" id="checkout-items" aria-live="polite"></ul>
         <p class="checkout-empty" id="checkout-empty" hidden>Váš košík je prázdny. Vráťte sa do katalógu a vyberte si produkty.</p>
+        <div class="checkout-delivery-total"><span>Doprava</span><strong id="checkout-delivery-total">3,90 €</strong></div>
         <div class="checkout-total">
           <span>CENA</span>
           <strong id="checkout-total">0,00 €</strong>
         </div>
       </section>
 
-      <section class="checkout-form-section" aria-labelledby="checkout-form-title">
-        <p class="eyebrow">02 <span class="eyebrow-divider">/</span> Vaše údaje</p>
-        <h2 id="checkout-form-title">RÝCHLA POKLADŇA</h2>
-        <form class="checkout-form" id="checkout-form">
-          <label class="checkout-field" for="checkout-name">
-            Meno
-            <input id="checkout-name" name="name" type="text" autocomplete="name" required>
-          </label>
-          <label class="checkout-field" for="checkout-phone">
-            Telefón
-            <input id="checkout-phone" name="phone" type="tel" autocomplete="tel" required>
-          </label>
-          <label class="checkout-field" for="checkout-address">
-            Adresa
-            <input id="checkout-address" name="address" type="text" autocomplete="street-address" required>
-          </label>
-          <label class="checkout-field" for="checkout-email">
-            E-mail
-            <input id="checkout-email" name="email" type="email" autocomplete="email" required>
-          </label>
+      <div class="checkout-panels">
+        <section class="checkout-form-section" id="quick-checkout-panel" aria-labelledby="quick-checkout-title">
+          <p class="eyebrow">01 <span class="eyebrow-divider">/</span> S uloženými údajmi</p>
+          <h2 id="quick-checkout-title">RÝCHLA POKLADŇA</h2>
+          <form class="checkout-form account-form" id="account-form">
+            <fieldset class="account-choice">
+              <legend>Pokračovať ako</legend>
+              <label><input type="radio" name="account-action" value="login" checked> Prihlásiť sa</label>
+              <label><input type="radio" name="account-action" value="register"> Vytvoriť účet</label>
+            </fieldset>
+            <label class="checkout-field" for="account-email">
+              E-mail
+              <input id="account-email" name="email" type="email" autocomplete="email" required>
+            </label>
+            <label class="checkout-field" for="account-password">
+              Heslo
+              <input id="account-password" name="password" type="password" autocomplete="current-password" minlength="8" required>
+            </label>
+            <p class="checkout-security-note">Ukážková pokladňa bez serverového účtu. Heslo sa neukladá; uložené sú iba kontaktné a doručovacie údaje.</p>
+            <button class="checkout-button checkout-submit" type="submit">Pokračovať</button>
+          </form>
+          <p class="account-status" id="account-status" role="status" aria-live="polite" hidden></p>
 
-          <fieldset class="payment-method">
-            <legend>Spôsob platby</legend>
-            <label><input type="radio" name="payment" value="card" checked> Karta</label>
-            <label><input type="radio" name="payment" value="cod"> Dobierka</label>
-          </fieldset>
+          <form class="checkout-form quick-order-form" id="quick-order-form" hidden>
+            <label class="checkout-field" for="quick-name">
+              Meno a priezvisko
+              <input id="quick-name" name="name" type="text" autocomplete="name" required>
+            </label>
+            <label class="checkout-field" for="quick-phone">
+              Telefón
+              <input id="quick-phone" name="phone" type="tel" autocomplete="tel" required>
+            </label>
+            <label class="checkout-field" for="quick-street">
+              Ulica a číslo
+              <input id="quick-street" name="street" type="text" autocomplete="street-address" required>
+            </label>
+            <div class="checkout-field-row">
+              <label class="checkout-field" for="quick-city">
+                Mesto
+                <input id="quick-city" name="city" type="text" autocomplete="address-level2" required>
+              </label>
+              <label class="checkout-field" for="quick-postal-code">
+                PSČ
+                <input id="quick-postal-code" name="postalCode" type="text" autocomplete="postal-code" required>
+              </label>
+            </div>
+            <label class="checkout-field" for="quick-delivery">
+              Doprava
+              <select id="quick-delivery" name="delivery" required>
+                <option value="courier" data-cost="3.9">Kuriér na adresu – 3,90 €</option>
+                <option value="packeta" data-cost="2.5">Packeta / Z-BOX – 2,50 €</option>
+                <option value="pickup" data-cost="0">Osobný odber Bratislava – zdarma</option>
+              </select>
+            </label>
+            <label class="checkout-field" for="quick-payment">
+              Platba
+              <select id="quick-payment" name="payment" required>
+                <option value="card">Platba ihneď online kartou</option>
+                <option value="cod">Platba pri doručení / Dobierka</option>
+              </select>
+            </label>
+            <button class="checkout-button checkout-submit" type="submit">Dokončiť objednávku</button>
+          </form>
+          <button class="guest-checkout-button" id="guest-checkout-button" type="button">Nechcem sa registrovať – prejsť na klasickú objednávku</button>
+        </section>
 
-          <button class="checkout-button checkout-submit" type="submit">Dokončiť objednávku</button>
-        </form>
+        <section class="checkout-form-section" id="standard-checkout-panel" aria-labelledby="standard-checkout-title" hidden>
+          <p class="eyebrow">01 <span class="eyebrow-divider">/</span> Bez registrácie</p>
+          <h2 id="standard-checkout-title">ŠTANDARDNÁ OBJEDNÁVKA</h2>
+          <form class="checkout-form standard-order-form" id="standard-order-form">
+            <details class="checkout-accordion" open>
+              <summary>1. Osobné údaje</summary>
+              <div class="checkout-accordion-content">
+                <label class="checkout-field" for="standard-name">
+                  Meno a priezvisko
+                  <input id="standard-name" name="name" type="text" autocomplete="name" required>
+                </label>
+                <label class="checkout-field" for="standard-email">
+                  E-mail
+                  <input id="standard-email" name="email" type="email" autocomplete="email" required>
+                </label>
+                <label class="checkout-field" for="standard-phone">
+                  Telefón
+                  <input id="standard-phone" name="phone" type="tel" autocomplete="tel" required>
+                </label>
+              </div>
+            </details>
+
+            <details class="checkout-accordion">
+              <summary>2. Doprava</summary>
+              <div class="checkout-accordion-content">
+                <label class="checkout-field" for="standard-street">
+                  Ulica a číslo
+                  <input id="standard-street" name="street" type="text" autocomplete="street-address" required>
+                </label>
+                <div class="checkout-field-row">
+                  <label class="checkout-field" for="standard-city">
+                    Mesto
+                    <input id="standard-city" name="city" type="text" autocomplete="address-level2" required>
+                  </label>
+                  <label class="checkout-field" for="standard-postal-code">
+                    PSČ
+                    <input id="standard-postal-code" name="postalCode" type="text" autocomplete="postal-code" required>
+                  </label>
+                </div>
+                <label class="checkout-field" for="standard-delivery">
+                  Spôsob dopravy
+                  <select id="standard-delivery" name="delivery" required>
+                    <option value="courier" data-cost="3.9">Kuriér na adresu – 3,90 €</option>
+                    <option value="packeta" data-cost="2.5">Packeta / Z-BOX – 2,50 €</option>
+                    <option value="pickup" data-cost="0">Osobný odber Bratislava – zdarma</option>
+                  </select>
+                </label>
+              </div>
+            </details>
+
+            <details class="checkout-accordion">
+              <summary>3. Platba</summary>
+              <div class="checkout-accordion-content">
+                <label class="checkout-field" for="standard-payment">
+                  Spôsob platby
+                  <select id="standard-payment" name="payment" required>
+                    <option value="card">Platba ihneď online kartou</option>
+                    <option value="cod">Platba pri doručení / Dobierka</option>
+                  </select>
+                </label>
+              </div>
+            </details>
+
+            <button class="checkout-button checkout-submit" type="submit">Dokončiť objednávku</button>
+          </form>
+        </section>
         <p class="checkout-confirmation" id="order-confirmation" role="status" aria-live="polite" hidden></p>
-      </section>
+      </div>
     </div>
   </main>
 </body>

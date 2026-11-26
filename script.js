@@ -93,11 +93,22 @@ const cartTotal = document.querySelector("#cart-total");
 const cartAnnouncement = document.querySelector("#cart-announcement");
 const checkoutButton = document.querySelector("#checkout-button");
 const continueShoppingButton = document.querySelector("#continue-shopping-button");
-const checkoutForm = document.querySelector("#checkout-form");
+const accountForm = document.querySelector("#account-form");
+const quickOrderForm = document.querySelector("#quick-order-form");
+const standardOrderForm = document.querySelector("#standard-order-form");
 const checkoutItems = document.querySelector("#checkout-items");
 const checkoutTotal = document.querySelector("#checkout-total");
+const checkoutDeliveryTotal = document.querySelector("#checkout-delivery-total");
 const checkoutEmpty = document.querySelector("#checkout-empty");
 const orderConfirmation = document.querySelector("#order-confirmation");
+const checkoutModeButtons = [...document.querySelectorAll("[data-checkout-mode]")];
+const checkoutModePanels = {
+  quick: document.querySelector("#quick-checkout-panel"),
+  standard: document.querySelector("#standard-checkout-panel")
+};
+const accountStatus = document.querySelector("#account-status");
+const guestCheckoutButton = document.querySelector("#guest-checkout-button");
+const checkoutProfileKey = "luxe-customer";
 const currency = new Intl.NumberFormat("sk-SK", {
   style: "currency",
   currency: "EUR"
@@ -225,7 +236,7 @@ function openCart() {
 }
 
 function renderCheckout() {
-  if (!checkoutForm || !checkoutItems || !checkoutTotal || !checkoutEmpty) return;
+  if (!checkoutItems || !checkoutTotal || !checkoutDeliveryTotal || !checkoutEmpty) return;
 
   checkoutItems.replaceChildren();
   let total = 0;
@@ -259,14 +270,156 @@ function renderCheckout() {
     total += item.price * item.quantity;
   });
 
-  checkoutTotal.textContent = currency.format(total);
+  const activePanel = document.querySelector(".checkout-form-section:not([hidden])");
+  const deliverySelect = activePanel?.querySelector('select[name="delivery"]');
+  const deliveryCost = cart.size && deliverySelect
+    ? Number(deliverySelect.selectedOptions[0].dataset.cost)
+    : 0;
+  checkoutDeliveryTotal.textContent = currency.format(deliveryCost);
+  checkoutTotal.textContent = currency.format(total + deliveryCost);
   const hasItems = cart.size > 0;
-  checkoutForm.hidden = !hasItems;
   checkoutEmpty.hidden = hasItems;
 }
 
 if (cartItems) renderCart();
-if (checkoutForm) renderCheckout();
+if (checkoutItems) renderCheckout();
+
+function setCheckoutMode(mode) {
+  if (mode !== "quick") {
+    const passwordInput = accountForm?.elements.namedItem("password");
+    if (passwordInput) passwordInput.value = "";
+  }
+
+  checkoutModeButtons.forEach((button) => {
+    const isActive = button.dataset.checkoutMode === mode;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+
+  Object.entries(checkoutModePanels).forEach(([panelMode, panel]) => {
+    if (panel) panel.hidden = panelMode !== mode;
+  });
+  if (checkoutItems) renderCheckout();
+}
+
+checkoutModeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setCheckoutMode(button.dataset.checkoutMode);
+    if (orderConfirmation) orderConfirmation.hidden = true;
+  });
+});
+
+document.querySelectorAll('select[name="delivery"]').forEach((select) => {
+  select.addEventListener("change", renderCheckout);
+});
+
+function loadCustomerProfile(email) {
+  const savedProfile = localStorage.getItem(checkoutProfileKey);
+  if (!savedProfile) return false;
+
+  let profile;
+  try {
+    profile = JSON.parse(savedProfile);
+  } catch {
+    localStorage.removeItem(checkoutProfileKey);
+    return false;
+  }
+  if (!profile || profile.email !== email) return false;
+
+  ["name", "phone", "street", "city", "postalCode"].forEach((field) => {
+    const input = quickOrderForm.elements.namedItem(field);
+    if (input) input.value = profile[field] || "";
+  });
+  return true;
+}
+
+function saveCustomerProfile(formData, email) {
+  localStorage.setItem(checkoutProfileKey, JSON.stringify({
+    name: formData.get("name"),
+    email: email.trim().toLocaleLowerCase("sk"),
+    phone: formData.get("phone"),
+    street: formData.get("street"),
+    city: formData.get("city"),
+    postalCode: formData.get("postalCode")
+  }));
+}
+
+function completeCheckout(form, email) {
+  if (!cart.size) return;
+
+  const formData = new FormData(form);
+  saveCustomerProfile(formData, email || String(formData.get("email") || ""));
+  const customerName = formData.get("name");
+  cart.clear();
+  saveCart();
+  renderCheckout();
+
+  if (orderConfirmation) {
+    orderConfirmation.textContent = `Ďakujeme${customerName ? `, ${customerName}` : ""}. Objednávka bola zaznamenaná v ukážkovej pokladni. Platba ani odoslanie údajov neprebehli.`;
+    orderConfirmation.hidden = false;
+  }
+}
+
+if (accountForm && quickOrderForm) {
+  accountForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!cart.size) return;
+
+    const accountData = new FormData(accountForm);
+    const email = String(accountData.get("email") || "").trim().toLocaleLowerCase("sk");
+    const passwordInput = accountForm.elements.namedItem("password");
+    const action = accountData.get("account-action");
+    if (passwordInput) passwordInput.value = "";
+
+    const hasSavedProfile = loadCustomerProfile(email);
+    accountForm.hidden = true;
+    quickOrderForm.hidden = false;
+    if (accountStatus) {
+      const savedDetails = hasSavedProfile ? " Uložené doručovacie údaje sme predvyplnili." : "";
+      accountStatus.textContent = action === "register"
+        ? `Ukážková registrácia je pripravená.${savedDetails} Doplňte alebo skontrolujte údaje.`
+        : `Ukážkové prihlásenie pokračuje.${savedDetails} Doplňte alebo skontrolujte údaje.`;
+      accountStatus.hidden = false;
+    }
+    renderCheckout();
+  });
+}
+
+if (guestCheckoutButton) {
+  guestCheckoutButton.addEventListener("click", () => {
+    const passwordInput = accountForm?.elements.namedItem("password");
+    if (passwordInput) passwordInput.value = "";
+    setCheckoutMode("standard");
+    document.querySelector("#standard-name")?.focus();
+  });
+}
+
+if (quickOrderForm) {
+  quickOrderForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const accountEmail = String(accountForm?.elements.namedItem("email").value || "");
+    completeCheckout(quickOrderForm, accountEmail);
+  });
+}
+
+accountForm?.querySelectorAll('input[name="account-action"]').forEach((input) => {
+  input.addEventListener("change", () => {
+    const passwordInput = accountForm.elements.namedItem("password");
+    if (passwordInput) {
+      passwordInput.autocomplete = input.value === "register" ? "new-password" : "current-password";
+    }
+  });
+});
+
+if (standardOrderForm) {
+  standardOrderForm.addEventListener("invalid", (event) => {
+    event.target.closest("details")?.setAttribute("open", "");
+  }, true);
+  standardOrderForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    completeCheckout(standardOrderForm);
+  });
+}
 
 document.querySelectorAll(".add-to-cart").forEach((button) => {
   button.addEventListener("click", () => {
